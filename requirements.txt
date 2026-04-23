@@ -1,0 +1,12 @@
+langchain
+langchain-community
+pymupdf
+sentence-transformers
+chromadb
+ollama
+gradio
+ragas
+datasets
+pandas
+python-dotenv
+requests

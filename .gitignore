@@ -1,0 +1,34 @@
+# Vector database (regenerate with build_kb.py)
+chroma_db/
+
+# PDFs — large files, add manually or document separately
+data/raw/*.pdf
+data/processed/
+
+# Evaluation outputs (generated)
+evaluation/eval_results.csv
+evaluation/flagged_outputs.csv
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Environment variables
+.env
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/

@@ -1,0 +1,265 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.8em}
+\title{Linear Algebra: Systems, Row Reduction, Rank, and Determinants}
+\author{Intermediate Course Notes}
+\date{}
+\begin{document}
+\maketitle
+
+\section*{Systems of Linear Equations}
+
+A system of $m$ linear equations in $n$ unknowns $x_1, x_2, \ldots, x_n$ has the form:
+\[
+\begin{aligned}
+a_{11} x_1 + a_{12} x_2 + \cdots + a_{1n} x_n &= b_1, \\
+a_{21} x_1 + a_{22} x_2 + \cdots + a_{2n} x_n &= b_2, \\
+&\vdots \\
+a_{m1} x_1 + a_{m2} x_2 + \cdots + a_{mn} x_n &= b_m.
+\end{aligned}
+\]
+In matrix form, this is $Ax = b$, where $A$ is the $m \times n$ coefficient matrix, $x$ is the $n \times 1$ column vector of unknowns, and $b$ is the $m \times 1$ column vector of constants.
+
+A solution is a vector $x$ that satisfies all $m$ equations simultaneously. There are exactly three possibilities:
+\begin{enumerate}
+  \item Exactly one solution (the system is consistent and the solution is unique).
+  \item No solution (the system is inconsistent: the equations contradict each other).
+  \item Infinitely many solutions (the system is consistent but underdetermined: some variables are free).
+\end{enumerate}
+
+Geometrically, each equation defines a hyperplane in $\mathbb{R}^n$. Solutions are the points where all hyperplanes intersect. In $\mathbb{R}^2$, two equations typically define two lines, and a unique solution is their intersection point. If the lines are parallel, there is no intersection. If they are the same line, every point on it is a solution.
+
+The augmented matrix $[A \mid b]$ encodes the entire system in a single object:
+\[
+[A \mid b] = \begin{bmatrix} a_{11} & a_{12} & \cdots & a_{1n} & b_1 \\ a_{21} & a_{22} & \cdots & a_{2n} & b_2 \\ \vdots & \vdots & & \vdots & \vdots \\ a_{m1} & a_{m2} & \cdots & a_{mn} & b_m \end{bmatrix}.
+\]
+
+\section*{Gaussian Elimination and Row Reduction}
+
+Gaussian elimination is the systematic method for solving $Ax = b$ by transforming the augmented matrix into row echelon form. The three elementary row operations are:
+\begin{itemize}
+  \item \textbf{Row swap}: interchange rows $i$ and $j$.
+  \item \textbf{Row scaling}: multiply row $i$ by a nonzero scalar $c$.
+  \item \textbf{Row addition}: add $c$ times row $j$ to row $i$.
+\end{itemize}
+None of these operations change the solution set of the system.
+
+A matrix is in row echelon form when:
+\begin{itemize}
+  \item All zero rows are at the bottom.
+  \item Each nonzero row's leading entry (pivot) is strictly to the right of the pivot in the row above.
+\end{itemize}
+
+A matrix is in reduced row echelon form (RREF) when additionally:
+\begin{itemize}
+  \item Each pivot equals 1.
+  \item Each pivot is the only nonzero entry in its column.
+\end{itemize}
+
+Example: solve the system
+\[
+\begin{cases} x + 2y = 5 \\ 2x - y = 0. \end{cases}
+\]
+Augmented matrix:
+\[
+\begin{bmatrix} 1 & 2 & 5 \\ 2 & -1 & 0 \end{bmatrix}
+\xrightarrow{R_2 \leftarrow R_2 - 2R_1}
+\begin{bmatrix} 1 & 2 & 5 \\ 0 & -5 & -10 \end{bmatrix}
+\xrightarrow{R_2 \leftarrow -\frac{1}{5}R_2}
+\begin{bmatrix} 1 & 2 & 5 \\ 0 & 1 & 2 \end{bmatrix}
+\xrightarrow{R_1 \leftarrow R_1 - 2R_2}
+\begin{bmatrix} 1 & 0 & 1 \\ 0 & 1 & 2 \end{bmatrix}.
+\]
+Reading off RREF: $x = 1$, $y = 2$.
+
+For a system with free variables, the RREF will have columns without pivots. Those columns correspond to free variables that can take any value, generating infinitely many solutions.
+
+\section*{Identifying Consistency from Row Echelon Form}
+
+After row reducing the augmented matrix, check whether the system is consistent:
+\begin{itemize}
+  \item If there is a pivot in the augmented column (a row of the form $[0 \; 0 \; \cdots \; 0 \mid c]$ with $c \neq 0$), the system is inconsistent: no solution.
+  \item If no pivot appears in the augmented column, the system is consistent.
+    \begin{itemize}
+      \item If every variable column has a pivot, the solution is unique.
+      \item If some variable columns lack pivots (free variables), there are infinitely many solutions.
+    \end{itemize}
+\end{itemize}
+
+This analysis makes row reduction not just a computational tool but a structural diagnostic: it tells you everything about whether and how a system can be solved.
+
+\section*{Rank of a Matrix}
+
+The rank of a matrix $A$ is the number of pivot positions in any row echelon form of $A$. It equals the dimension of the column space (image) of $A$, and also the dimension of the row space.
+
+Formally, the column space $\text{Col}(A)$ is the span of the columns of $A$. The rank counts how many columns are genuinely independent (i.e., not expressible as a combination of earlier columns).
+
+Key facts about rank:
+\begin{itemize}
+  \item $\text{rank}(A) \leq \min(m, n)$ for an $m \times n$ matrix.
+  \item $A$ has full column rank if $\text{rank}(A) = n$: all columns are independent. The equation $Ax = b$ has at most one solution for each $b$.
+  \item $A$ has full row rank if $\text{rank}(A) = m$: every $b$ is achievable. The equation $Ax = b$ always has at least one solution.
+  \item A square $n \times n$ matrix has full rank $n$ if and only if it is invertible.
+\end{itemize}
+
+The null space (kernel) of $A$ is $\ker(A) = \{x : Ax = \mathbf{0}\}$. The rank-nullity theorem states:
+\[
+\text{rank}(A) + \text{nullity}(A) = n,
+\]
+where $n$ is the number of columns. This says the dimensions of the image and kernel are complementary: each pivot variable corresponds to a dimension of the image, and each free variable corresponds to a dimension of the kernel.
+
+Example: the matrix
+\[
+A = \begin{bmatrix} 1 & 2 & 3 \\ 2 & 4 & 6 \end{bmatrix}
+\]
+row-reduces to
+\[
+\begin{bmatrix} 1 & 2 & 3 \\ 0 & 0 & 0 \end{bmatrix},
+\]
+which has rank 1. Nullity is $3 - 1 = 2$: there is a two-dimensional family of vectors mapped to zero.
+
+\section*{Linear Independence via Row Reduction}
+
+Row reduction provides the definitive test for linear independence. Given vectors $v_1, \ldots, v_k \in \mathbb{R}^m$, form the matrix $A$ with these as columns. Row-reduce $A$:
+\begin{itemize}
+  \item If every column of $A$ has a pivot, the vectors are linearly independent.
+  \item If any column lacks a pivot, that column's vector is a linear combination of the previous ones, and the set is dependent.
+\end{itemize}
+
+The pivot columns of $A$ form a basis for the column space. Non-pivot columns are in the span of the pivot columns to their left.
+
+This also connects to systems: $c_1 v_1 + \cdots + c_k v_k = \mathbf{0}$ is a homogeneous system $Ac = \mathbf{0}$. The vectors are independent iff this system has only the trivial solution, which happens iff every column of $A$ is a pivot column.
+
+\section*{Determinants: Definition and Computation}
+
+The determinant $\det(A)$ is a scalar defined for square matrices. For $1 \times 1$: $\det([a]) = a$. For $2 \times 2$:
+\[
+\det\begin{bmatrix} a & b \\ c & d \end{bmatrix} = ad - bc.
+\]
+
+For larger matrices, the determinant is computed by cofactor expansion along any row or column. Expanding along row $i$:
+\[
+\det(A) = \sum_{j=1}^n (-1)^{i+j} A_{ij} \det(M_{ij}),
+\]
+where $M_{ij}$ is the $(n-1) \times (n-1)$ minor obtained by deleting row $i$ and column $j$, and $(-1)^{i+j}$ is the sign factor (the ``checkerboard'' of $+$ and $-$ signs).
+
+For a $3 \times 3$ matrix, expanding along the first row:
+\[
+\det\begin{bmatrix} a & b & c \\ d & e & f \\ g & h & i \end{bmatrix} = a(ei - fh) - b(di - fg) + c(dh - eg).
+\]
+
+Properties of the determinant under row operations:
+\begin{itemize}
+  \item Swapping two rows multiplies the determinant by $-1$.
+  \item Multiplying a row by $c$ multiplies the determinant by $c$.
+  \item Adding a multiple of one row to another does not change the determinant.
+\end{itemize}
+
+Using these properties, one can row-reduce a matrix to triangular form and compute the determinant as the product of the diagonal entries (adjusted for any row swaps and row scalings performed along the way).
+
+The determinant of a triangular matrix (upper or lower) is the product of its diagonal entries.
+
+\section*{Geometric Meaning of the Determinant}
+
+The absolute value $|\det(A)|$ measures how much the linear transformation $x \mapsto Ax$ scales volumes. More precisely:
+\begin{itemize}
+  \item In $\mathbb{R}^2$: $|\det(A)|$ is the area of the parallelogram spanned by the columns of $A$.
+  \item In $\mathbb{R}^3$: $|\det(A)|$ is the volume of the parallelepiped spanned by the columns.
+  \item In general: $|\det(A)|$ is the $n$-dimensional volume scaling factor.
+\end{itemize}
+
+The sign of $\det(A)$ indicates orientation:
+\begin{itemize}
+  \item $\det(A) > 0$: the transformation preserves orientation.
+  \item $\det(A) < 0$: the transformation reverses orientation (like a reflection).
+  \item $\det(A) = 0$: the transformation is singular; it collapses the space to a lower dimension and destroys volume.
+\end{itemize}
+
+The product rule for determinants: $\det(AB) = \det(A) \det(B)$. This says the volume scaling of a composed transformation is the product of the individual scalings.
+
+\section*{Determinants and Invertibility}
+
+A square matrix $A$ is invertible if and only if $\det(A) \neq 0$.
+
+When $\det(A) = 0$, the matrix is singular: its columns are linearly dependent, its rank is less than $n$, and the transformation $x \mapsto Ax$ collapses the input space to a lower-dimensional image. There is no way to recover the original input from the output.
+
+When $\det(A) \neq 0$, the transformation is bijective: every output corresponds to exactly one input, and the inverse transformation exists.
+
+Cramer's rule gives an explicit formula for the solution of $Ax = b$ when $A$ is invertible:
+\[
+x_j = \frac{\det(A_j)}{\det(A)},
+\]
+where $A_j$ is the matrix obtained by replacing column $j$ of $A$ with $b$. Cramer's rule is elegant but computationally expensive for large systems; Gaussian elimination is preferred in practice.
+
+\section*{The Matrix Inverse via Row Reduction}
+
+To compute $A^{-1}$ for an invertible $n \times n$ matrix $A$: augment $A$ with the identity matrix $I$ and row-reduce the entire augmented matrix $[A \mid I]$ to RREF. When the left block becomes $I$, the right block is $A^{-1}$:
+\[
+[A \mid I] \xrightarrow{\text{RREF}} [I \mid A^{-1}].
+\]
+
+Example: let $A = \begin{bmatrix} 2 & 1 \\ 5 & 3 \end{bmatrix}$. Then $\det(A) = 6 - 5 = 1 \neq 0$, so $A$ is invertible.
+
+\[
+\begin{bmatrix} 2 & 1 & 1 & 0 \\ 5 & 3 & 0 & 1 \end{bmatrix}
+\to
+\begin{bmatrix} 1 & 0 & 3 & -1 \\ 0 & 1 & -5 & 2 \end{bmatrix}.
+\]
+So $A^{-1} = \begin{bmatrix} 3 & -1 \\ -5 & 2 \end{bmatrix}$.
+
+Check: $AA^{-1} = \begin{bmatrix} 2 & 1 \\ 5 & 3 \end{bmatrix}\begin{bmatrix} 3 & -1 \\ -5 & 2 \end{bmatrix} = \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}$. Confirmed.
+
+Properties of the inverse: $(A^{-1})^{-1} = A$; $(AB)^{-1} = B^{-1}A^{-1}$; $(A^T)^{-1} = (A^{-1})^T$; $\det(A^{-1}) = 1/\det(A)$.
+
+\section*{Vector Spaces and Subspaces}
+
+A vector space $V$ over $\mathbb{R}$ is a set equipped with addition and scalar multiplication satisfying eight axioms: commutativity and associativity of addition, the existence of a zero vector, the existence of additive inverses, and four distributive/associative laws connecting addition and scalar multiplication.
+
+Common examples: $\mathbb{R}^n$ (tuples of $n$ real numbers), $\mathcal{P}_n$ (polynomials of degree at most $n$), $\mathcal{M}_{m \times n}$ (matrices of size $m \times n$), and the zero space $\{0\}$.
+
+A subspace of $V$ is a subset $W \subseteq V$ that is itself a vector space. The three subspace conditions: $\mathbf{0} \in W$; if $u, v \in W$ then $u + v \in W$; if $u \in W$ and $c \in \mathbb{R}$ then $cu \in W$.
+
+Important subspaces associated with a matrix $A$ of size $m \times n$:
+\begin{itemize}
+  \item Column space $\text{Col}(A) \subseteq \mathbb{R}^m$: span of the columns of $A$.
+  \item Null space $\text{Null}(A) \subseteq \mathbb{R}^n$: $\{x : Ax = \mathbf{0}\}$.
+  \item Row space $\text{Row}(A) \subseteq \mathbb{R}^n$: span of the rows of $A$.
+\end{itemize}
+
+The dimension of $\text{Col}(A)$ and the dimension of $\text{Row}(A)$ are both equal to $\text{rank}(A)$. Row reduction preserves the row space but may change the column space; use the original pivot columns to form a basis for the column space.
+
+\section*{Eigenvalues and the Characteristic Polynomial}
+
+For an $n \times n$ matrix $A$, the characteristic polynomial is
+\[
+p(\lambda) = \det(A - \lambda I).
+\]
+This is a degree-$n$ polynomial in $\lambda$. The eigenvalues of $A$ are the roots of $p(\lambda) = 0$.
+
+Once an eigenvalue $\lambda$ is known, the corresponding eigenvectors are found by solving the homogeneous system $(A - \lambda I)x = \mathbf{0}$. The set of solutions is the eigenspace $E_\lambda = \ker(A - \lambda I)$, which is a subspace.
+
+The algebraic multiplicity of an eigenvalue $\lambda$ is its multiplicity as a root of the characteristic polynomial. The geometric multiplicity is $\dim(E_\lambda) = \text{nullity}(A - \lambda I)$.
+
+The geometric multiplicity is always at most the algebraic multiplicity. When they are equal for every eigenvalue, the matrix is diagonalizable: $A = PDP^{-1}$ where $P$ contains eigenvectors as columns and $D$ is diagonal with eigenvalues on the diagonal.
+
+If all $n$ eigenvalues are distinct, the matrix is automatically diagonalizable.
+
+\section*{Row Reduction and Eigenvalues}
+
+Row reduction should never be used to find eigenvalues: row operations change the determinant (and thus the characteristic polynomial) and do not preserve eigenvalues. Always compute eigenvalues from $\det(A - \lambda I) = 0$ using the original matrix.
+
+Row reduction is appropriate for: solving $Ax = b$, finding $A^{-1}$, computing rank and null space, and testing linear independence. Eigenvalues require the characteristic polynomial, not row echelon form.
+
+The trace of $A$ (sum of diagonal entries) equals the sum of eigenvalues. The determinant of $A$ equals the product of eigenvalues. These are fast checks when the eigenvalues are already known.
+
+\section*{Summary}
+
+Row reduction is the central computational tool of this course: it solves systems, computes rank and null space, finds inverses, and tests independence. Rank measures the genuinely independent content of a matrix, and the rank-nullity theorem constrains how much information can be preserved or lost.
+
+Determinants measure volume scaling and detect singularity. Together, rank, determinants, and inverses answer the most basic question of linear algebra: when does a linear system have solutions, and when do those solutions exist uniquely?
+
+\end{document}

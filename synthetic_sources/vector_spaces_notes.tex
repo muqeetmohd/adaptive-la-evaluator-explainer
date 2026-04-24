@@ -1,0 +1,202 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.8em}
+\title{Understanding Linear Algebra Through Pictures and Intuition}
+\author{Introductory Notes for Beginners}
+\date{}
+\begin{document}
+\maketitle
+
+\section*{What Is a Vector?}
+
+A vector is simply an arrow. It has two things: a length (how long the arrow is) and a direction (which way it points). You can think of a vector as a set of instructions: ``go three steps to the right and two steps up.'' That instruction is a vector.
+
+In everyday life, vectors show up whenever we describe something that has both size and direction. Wind velocity is a vector because the wind blows with a certain speed in a certain direction. Force is a vector because you push or pull with a certain strength in a certain direction. Displacement is a vector because moving from one place to another involves both a distance and a direction.
+
+When we write a vector on paper, we list its components. If a vector says ``go 3 right and 2 up,'' we write it as a column with 3 on top and 2 on the bottom. Those numbers tell us how much the vector moves along each axis of our coordinate system.
+
+Adding two vectors means following one arrow and then following the other. If the first arrow says ``go right 3, up 2'' and the second says ``go right 1, up 4,'' then together they say ``go right 4, up 6.'' You just add the matching components.
+
+Scaling a vector means stretching or shrinking it. Multiplying a vector by 2 doubles its length but keeps it pointing in the same direction. Multiplying by a negative number flips it to point the opposite way. Multiplying by zero collapses it to the zero vector, which has no length and no direction.
+
+The zero vector is special: it represents no movement at all. It is the starting point, the origin, the reference from which all other vectors are measured.
+
+\section*{Vector Spaces: Collections That Behave Like Arrows}
+
+A vector space is a whole collection of vectors that all live in the same world and follow the same rules. The ordinary plane is a vector space: you can take any two arrows in the plane, add them, and get another arrow that is still in the plane. You can scale any arrow and it stays in the plane.
+
+The rule that makes something a vector space is simple: whenever you combine things (by adding or scaling), you stay inside the same collection. This is called closure. If you try to build something outside the collection, that collection is not a vector space.
+
+Think of the set of all arrows lying flat on a table. If you add two flat arrows, you get another flat arrow. If you scale a flat arrow, it stays flat. So flat arrows form a vector space. But if you are allowed to tilt arrows off the table, suddenly you can escape the flat world, so the flat arrows are only a vector space as long as you stay flat.
+
+The simplest vector space is the number line. Each point on the line is a one-dimensional vector. You can add two points and scale any point, and you stay on the line.
+
+The plane is a two-dimensional vector space. Three-dimensional physical space is a three-dimensional vector space. You can also have vector spaces with four, five, or any number of dimensions, even though you cannot draw them.
+
+\section*{The Dot Product: Measuring How Aligned Two Vectors Are}
+
+The dot product is a way of multiplying two vectors that gives you a single number, not another vector. It measures how much two vectors are ``pointing in the same direction.''
+
+Imagine two arrows on a table. If they both point in exactly the same direction, their dot product is as large as it can be (given their lengths). If one points straight right and the other points straight up, they are at a right angle, and their dot product is zero. If they point in opposite directions, the dot product is negative.
+
+You compute the dot product by multiplying the matching components and adding the results. If one vector is (2, 3) and another is (4, 1), the dot product is 2 times 4 plus 3 times 1, which equals 11.
+
+The dot product also connects to length: the dot product of a vector with itself equals the square of the vector's length. This is just the Pythagorean theorem in disguise.
+
+The dot product is used to measure projections. The projection of one vector onto another tells you how much of one arrow lies in the direction of the other. Projections are used everywhere: in physics to find the component of a force along a direction, in machine learning to measure similarity, and in signal processing to decompose signals.
+
+\section*{Orthogonality: When Vectors Are Perfectly Perpendicular}
+
+Two vectors are orthogonal when their dot product is zero. Geometrically, this means they meet at a right angle. In everyday terms, east and north are orthogonal because they are completely independent directions: knowing how far east you traveled tells you nothing about how far north you went.
+
+Orthogonal vectors are very useful because they are independent of each other in the cleanest possible way. When you decompose a vector into orthogonal pieces, each piece is completely separate and can be analyzed on its own.
+
+A set of vectors that are all pairwise orthogonal is called an orthogonal set. If each of those vectors also has length one, the set is called orthonormal. Orthonormal vectors are the cleanest possible coordinate system because they are perfectly aligned with the axes and have standard length.
+
+The standard unit vectors along the x-axis and y-axis in the plane are orthonormal. They form the most natural coordinate system. Many computations become much simpler when expressed in terms of orthonormal vectors.
+
+Orthogonality also connects to independence: if a set of vectors is orthogonal, those vectors are automatically linearly independent. This is because no orthogonal vector can be built from the others.
+
+\section*{Matrix Multiplication: Applying a Rule to a Vector}
+
+A matrix is a grid of numbers. When you multiply a matrix by a vector, you are applying a rule to that vector and getting a new vector out. The matrix encodes the rule; the vector is the input; the output is another vector.
+
+Think of a matrix as a machine. You feed an arrow in, and the machine produces a new arrow according to a fixed recipe. The recipe is written in the rows and columns of the matrix.
+
+The way it works: each row of the matrix combines the components of the input vector using its own recipe. If the matrix has two rows, it produces a two-component output vector. If it has three rows, it produces a three-component output.
+
+To find one component of the output, you take one row of the matrix and compute its dot product with the input vector. You repeat this for each row to build the full output.
+
+When you multiply two matrices together, you are combining two rules into one. The result is a new matrix whose rule is: apply the second rule, then apply the first. This is how you represent sequences of transformations as a single combined rule.
+
+Matrix multiplication is not commutative: the order matters. Applying rule A then rule B gives a different result than applying rule B then rule A. Think of it like putting on socks and then shoes versus putting on shoes and then socks: the order changes everything.
+
+\section*{Linear Transformations: Stretching and Rotating Space}
+
+A linear transformation is a function that takes a vector and produces another vector, but does so in a structured way. The structure is this: if you add two vectors and then transform, you get the same result as transforming each one separately and adding. Similarly, scaling before or after transforming gives the same result.
+
+In plain terms, a linear transformation is one that does not shift the origin, does not curve anything, and does not treat different parts of the space differently. It applies the same rule everywhere.
+
+Stretching is linear: doubling every vector in a given direction is linear because it scales uniformly. Rotating is linear: spinning all vectors by the same angle respects addition and scaling. Reflecting is linear: flipping all vectors across a line gives a consistent, structure-preserving rule.
+
+Translation (sliding all vectors by a fixed amount) is not linear because the zero vector would need to move, but linear transformations always send zero to zero.
+
+Every linear transformation can be represented by a matrix. Once you know where the transformation sends the basic directions (like the x-axis and y-axis), you know where it sends everything. This is why matrices are so powerful: they capture entire transformations in a compact table of numbers.
+
+The composition of two linear transformations is linear. This is why multiplying matrices represents doing one transformation after another.
+
+\section*{Systems of Equations: Finding Where Lines Meet}
+
+A system of equations is a collection of conditions that must all be satisfied at once. A simple example: you know that two numbers add to five, and twice the first minus the second equals one. You want to find both numbers.
+
+Each equation in a system describes a line (in two dimensions) or a plane (in three dimensions) or a flat surface of some kind in higher dimensions. Solving the system means finding the point where all those surfaces intersect.
+
+There are three possible outcomes. First, the surfaces might meet at exactly one point: the system has a unique solution. Second, the surfaces might never intersect: there is no solution. Third, the surfaces might overlap in an entire line or plane: there are infinitely many solutions.
+
+Writing a system as a matrix equation packages everything neatly. The left side of all the equations becomes a matrix, the unknowns become a vector, and the right sides become another vector. The system now looks like: matrix times unknowns equals right-hand-side vector.
+
+The advantage of this packaging is that we can use matrix techniques to analyze and solve the system all at once, rather than juggling individual equations.
+
+\section*{Row Reduction: Simplifying Without Changing the Answer}
+
+Row reduction is a step-by-step process for simplifying a system of equations while keeping the solutions the same. You are allowed to do three things: swap two equations, multiply an equation by a nonzero number, or add a multiple of one equation to another. None of these change which values solve the system.
+
+The goal is to eliminate variables one at a time, so that eventually the system is so simple that the answer is obvious. When you eliminate all the variables below a chosen variable, you are working toward a triangular form where you can read off answers from the bottom up.
+
+Imagine the equations as rows of numbers in a table. You pick the first column and eliminate every entry below the top one. Then you move to the second column and eliminate below the second entry. You keep going until the table has a staircase pattern.
+
+This staircase pattern is called row echelon form. From this form, you can count how many solutions exist and find them by back-substitution: start from the simplest equation and work upward.
+
+Row reduction also reveals hidden structure. If a whole row of numbers becomes all zeros during the process, that equation was redundant: it contained no new information beyond what the other equations already said. This tells you something important about the geometry of the system.
+
+\section*{Rank: How Much Independent Information a Matrix Contains}
+
+The rank of a matrix is the number of genuinely independent pieces of information in it. After row reduction, the rank equals the number of nonzero rows, which also equals the number of ``pivot'' positions in the staircase.
+
+Think of it this way: if you have five equations but only two of them carry truly new information (the rest are just combinations of those two), then the rank is two. The other three equations were redundant.
+
+Rank tells you how constrained your system is. A high rank means many constraints, fewer solutions. A low rank means many of the constraints were saying the same thing, so there is more freedom.
+
+The rank also describes the dimension of the output when you apply the matrix as a transformation. If a matrix has rank two, then no matter what input you feed it, the output lives in a two-dimensional flat surface. The matrix cannot produce outputs that escape that surface.
+
+When the rank equals the number of rows and also the number of columns, the matrix has full rank. This is the best case: the transformation preserves all information and can be undone.
+
+\section*{Determinants: The Area and Volume Scaling Factor}
+
+The determinant of a square matrix tells you how much the transformation scales areas (in two dimensions) or volumes (in three dimensions). It is a single number that captures the size-changing behavior of the matrix.
+
+If the determinant is 2, the transformation doubles all areas. If it is one-half, it halves them. If it is negative, the transformation flips orientation (like a mirror reflection). If the determinant is zero, the transformation squashes everything down into a lower-dimensional shape.
+
+A determinant of zero is very important: it means the matrix collapses space. The transformation takes the whole plane and flattens it into a line or a point. When this happens, information is destroyed and the process cannot be reversed.
+
+For a two-by-two matrix with entries a, b, c, d arranged in a square (a and b on top, c and d on bottom), the determinant is a times d minus b times c. This formula gives the signed area of the parallelogram formed by the two row vectors.
+
+The sign of the determinant tells you about orientation. A positive determinant means the transformation preserves the clockwise-versus-counterclockwise distinction. A negative determinant means it reverses it.
+
+Determinants multiply when you compose transformations: if transformation A scales areas by 3 and transformation B scales areas by 4, then applying both in sequence scales areas by 12.
+
+\section*{The Matrix Inverse: Undoing a Transformation}
+
+If a transformation takes vectors to new positions, the inverse transformation brings them back. The matrix inverse is the matrix that undoes what the original matrix did.
+
+Applying a matrix and then its inverse in sequence gives you back the original vector: you have done nothing net. The combined effect is the identity transformation, which leaves every vector exactly where it was.
+
+Not every matrix has an inverse. A matrix can only be inverted if the transformation it represents does not destroy any information. Specifically, a matrix is invertible when its determinant is not zero. If the determinant is zero, the transformation collapsed space and cannot be reversed.
+
+The inverse is useful for solving equations. If you know the rule (the matrix) and the output (the result of applying the rule), you can find the input by applying the inverse to the output.
+
+Computing the inverse involves a systematic process: you set up the original matrix alongside the identity matrix and perform row reduction on both simultaneously. When the original side becomes the identity, the other side has become the inverse.
+
+\section*{Linear Independence: When No Vector Is Redundant}
+
+A set of vectors is linearly independent when no vector in the set can be built by combining the others. Each vector in the set contributes a direction that the others cannot produce on their own.
+
+In the plane, two vectors that point in different (non-opposite) directions are linearly independent. You need both of them: neither one can be obtained by scaling or adding the other. But if you add a third vector to any two non-parallel vectors in the plane, that third vector can always be expressed as a combination of the first two. So three vectors in the plane are always dependent.
+
+Thinking about it geometrically: independent vectors span new dimensions. The first vector spans a line. A second independent vector takes you off that line into a plane. A third independent vector takes you off the plane into three-dimensional space. Each independent vector adds a new dimension.
+
+Dependent vectors are redundant. If one of your vectors is just twice another one, it adds no new direction: you could have expressed everything using only the original vector.
+
+Testing independence: form a linear combination of the vectors and set it equal to zero. If the only way to do this is for all the coefficients to be zero, the vectors are independent. If you can set it to zero with some nonzero coefficients, they are dependent, and those coefficients tell you exactly how to write one vector in terms of the others.
+
+\section*{Basis: The Minimal Complete Description of a Space}
+
+A basis is a set of vectors that does two things at once: it spans the whole space (every vector in the space can be built from the basis) and its vectors are linearly independent (no vector is redundant). A basis is the most efficient description of a vector space.
+
+Once you have a basis, every vector in the space can be written in exactly one way as a combination of basis vectors. This uniqueness is what makes a basis useful as a coordinate system.
+
+The standard basis for the plane is the two unit arrows: one pointing right (the x-direction) and one pointing up (the y-direction). Any arrow in the plane can be described by saying how much of the rightward direction and how much of the upward direction it contains. Those two numbers are the coordinates.
+
+You can choose different bases, and different bases can make different problems easier. A basis aligned with the natural symmetry of a problem can simplify computations enormously.
+
+The number of vectors in a basis for a space is always the same, regardless of which basis you choose. This number is the dimension of the space. The plane has dimension two. Three-dimensional space has dimension three. A line has dimension one.
+
+\section*{Eigenvalues and Eigenvectors: Directions That Simply Scale}
+
+When a matrix transformation acts on most vectors, it changes both their length and their direction. But there are special vectors that only get stretched or shrunk: their direction stays the same. These special vectors are called eigenvectors.
+
+For an eigenvector, applying the matrix is the same as multiplying by a single number. That number is called the eigenvalue. It tells you how much the eigenvector gets scaled: if the eigenvalue is 3, the eigenvector triples in length; if it is negative one, the eigenvector flips and stays the same length.
+
+Think of stretching a rubber sheet. Most points move to new positions in a complicated way. But a few special lines stay in place as lines (though they may stretch along themselves). The vectors along those special lines are eigenvectors, and the amount of stretching is the eigenvalue.
+
+Eigenvalues and eigenvectors reveal the fundamental character of a transformation. They show you the ``natural directions'' of the matrix, the axes along which the transformation behaves in the simplest way.
+
+If you can find enough eigenvectors to form a basis, you can describe the entire transformation as just independent scaling along those directions. This is called diagonalization, and it is the simplest possible representation of a linear transformation.
+
+To find eigenvalues, you look for the values that make the transformation collapse (that is, have determinant zero after subtracting the eigenvalue from the diagonal). The resulting values are the eigenvalues, and the directions that collapse are the eigenvectors.
+
+\section*{Putting It All Together}
+
+All of these ideas connect. Vectors are the basic objects. Vector spaces are the collections they live in. Bases give us coordinates inside those spaces. Linear transformations are the functions that move vectors around in a structured way, and matrices are their numeric representation.
+
+Dot products measure alignment and give us a notion of angle. Orthogonality gives us the cleanest, most independent coordinate systems. Independence tells us which vectors contribute genuinely new directions.
+
+Systems of equations ask where transformation outputs match a target. Row reduction is the algorithm for answering that question, and rank tells us how many solutions exist. Determinants measure size scaling. Inverses undo transformations.
+
+Eigenvalues and eigenvectors strip a transformation down to its essential action: for the right choice of directions, a matrix does nothing more than scaling. That simplicity is the deepest insight of linear algebra.
+
+\end{document}

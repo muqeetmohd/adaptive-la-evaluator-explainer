@@ -1,3 +1,6 @@
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from knowledge_base.embed import load_knowledge_base
 from sentence_transformers import SentenceTransformer
 from retrieval.retrieve import retrieve_chunks, format_chunks_for_prompt

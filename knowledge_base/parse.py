@@ -22,9 +22,9 @@ def parse_pdf(pdf_path: str, source_name: str) -> list:
 
 def parse_all_sources() -> dict:
     sources = {
-        "mit_ocw": "data/raw/mit_ocw.pdf",
-        "openstax": "data/raw/openstax.pdf",
-        "pauls_notes": "data/raw/pauls_notes.pdf",
-        "axler": "data/raw/axler.pdf",
+        "intro_linear_algebra_notes": "data/raw/intro_linear_algebra_notes.pdf",
+        "systems_row_reduction_notes": "data/raw/systems_row_reduction_notes.pdf",
+        "vector_spaces_notes": "data/raw/vector_spaces_notes.pdf",
+        "eigen_notes": "data/raw/eigen_notes.pdf",
     }
     return {name: parse_pdf(path, name) for name, path in sources.items()}

@@ -1,3 +1,6 @@
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from knowledge_base.embed import load_knowledge_base
 from sentence_transformers import SentenceTransformer
 from pipeline import run_session

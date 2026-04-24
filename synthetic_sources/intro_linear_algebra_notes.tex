@@ -1,0 +1,257 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.8em}
+\title{Linear Algebra: Core Concepts with Examples}
+\author{Intermediate Course Notes}
+\date{}
+\begin{document}
+\maketitle
+
+\section*{Vectors and Their Operations}
+
+A vector in $\mathbb{R}^n$ is an ordered list of $n$ real numbers:
+\[
+v = \begin{bmatrix} v_1 \\ v_2 \\ \vdots \\ v_n \end{bmatrix}.
+\]
+Vectors support two operations: addition and scalar multiplication. Vector addition is defined componentwise:
+\[
+u + v = \begin{bmatrix} u_1 + v_1 \\ u_2 + v_2 \\ \vdots \\ u_n + v_n \end{bmatrix}.
+\]
+Scalar multiplication by $c \in \mathbb{R}$ scales every component:
+\[
+cv = \begin{bmatrix} cv_1 \\ cv_2 \\ \vdots \\ cv_n \end{bmatrix}.
+\]
+The magnitude (or norm) of a vector is the Euclidean length:
+\[
+\|v\| = \sqrt{v_1^2 + v_2^2 + \cdots + v_n^2}.
+\]
+A unit vector has magnitude 1. Any nonzero vector can be normalized by dividing by its magnitude: $\hat{v} = v / \|v\|$.
+
+The zero vector $\mathbf{0}$ has all components equal to zero. It is the additive identity: $v + \mathbf{0} = v$ for every vector $v$.
+
+\section*{The Dot Product}
+
+The dot product of two vectors $u, v \in \mathbb{R}^n$ is the scalar
+\[
+u \cdot v = u_1 v_1 + u_2 v_2 + \cdots + u_n v_n = \sum_{i=1}^n u_i v_i.
+\]
+The dot product connects to angle via the formula
+\[
+u \cdot v = \|u\| \|v\| \cos\theta,
+\]
+where $\theta$ is the angle between $u$ and $v$. This means:
+\begin{itemize}
+  \item $u \cdot v > 0$ when $\theta < 90°$: the vectors point generally in the same direction.
+  \item $u \cdot v = 0$ when $\theta = 90°$: the vectors are orthogonal.
+  \item $u \cdot v < 0$ when $\theta > 90°$: the vectors point generally in opposite directions.
+\end{itemize}
+
+Example: let $u = (1, 2, 3)$ and $v = (4, 0, -1)$. Then
+\[
+u \cdot v = (1)(4) + (2)(0) + (3)(-1) = 4 + 0 - 3 = 1.
+\]
+Since the result is small and positive, the vectors are nearly orthogonal but not quite.
+
+The projection of $u$ onto $v$ (the component of $u$ in the direction of $v$) is
+\[
+\text{proj}_v u = \frac{u \cdot v}{\|v\|^2} v.
+\]
+Projections are used to decompose vectors into components along chosen directions.
+
+\section*{Orthogonality and Orthonormal Bases}
+
+Two vectors are orthogonal if their dot product is zero: $u \cdot v = 0$. A set of vectors $\{v_1, v_2, \ldots, v_k\}$ is orthogonal if every pair is orthogonal: $v_i \cdot v_j = 0$ for all $i \neq j$.
+
+An orthonormal set additionally requires each vector to have unit length: $\|v_i\| = 1$ for all $i$. The standard basis vectors $e_1 = (1,0,0,\ldots)$, $e_2 = (0,1,0,\ldots)$, etc., form an orthonormal basis for $\mathbb{R}^n$.
+
+Orthonormal bases are computationally convenient. If $\{q_1, q_2, \ldots, q_n\}$ is an orthonormal basis for $\mathbb{R}^n$, then for any vector $v$:
+\[
+v = (v \cdot q_1) q_1 + (v \cdot q_2) q_2 + \cdots + (v \cdot q_n) q_n.
+\]
+The coordinates of $v$ in the orthonormal basis are simply the dot products with each basis vector. This is much simpler than the general change-of-basis formula.
+
+The Gram-Schmidt process converts any independent set of vectors into an orthonormal set spanning the same space. The idea is sequential: take the first vector, normalize it; take the second, subtract its projection onto the first to make it orthogonal, then normalize; and so on.
+
+\section*{Matrix Multiplication}
+
+A matrix $A$ of size $m \times n$ has $m$ rows and $n$ columns. The entry in row $i$ and column $j$ is written $A_{ij}$ or $a_{ij}$.
+
+Multiplying matrix $A$ (size $m \times n$) by vector $x \in \mathbb{R}^n$ produces a vector $b \in \mathbb{R}^m$:
+\[
+b_i = \sum_{j=1}^n A_{ij} x_j.
+\]
+Each component of the output is the dot product of one row of $A$ with $x$.
+
+Matrix-matrix multiplication of $A$ (size $m \times n$) and $B$ (size $n \times p$) gives $C = AB$ of size $m \times p$:
+\[
+C_{ij} = \sum_{k=1}^n A_{ik} B_{kj}.
+\]
+Entry $C_{ij}$ is the dot product of row $i$ of $A$ with column $j$ of $B$.
+
+Matrix multiplication is associative: $(AB)C = A(BC)$. It distributes over addition: $A(B + C) = AB + AC$. But it is generally not commutative: $AB \neq BA$.
+
+Example: let
+\[
+A = \begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix}, \quad B = \begin{bmatrix} 0 & 1 \\ 1 & 0 \end{bmatrix}.
+\]
+Then
+\[
+AB = \begin{bmatrix} 2 & 1 \\ 4 & 3 \end{bmatrix}, \quad BA = \begin{bmatrix} 3 & 4 \\ 1 & 2 \end{bmatrix}.
+\]
+Indeed $AB \neq BA$, confirming non-commutativity.
+
+\section*{Linear Transformations}
+
+A function $T: \mathbb{R}^n \to \mathbb{R}^m$ is a linear transformation if it satisfies two properties:
+\[
+T(u + v) = T(u) + T(v) \quad \text{(additivity)},
+\]
+\[
+T(cu) = c T(u) \quad \text{(homogeneity)}.
+\]
+These two conditions together mean $T(au + bv) = aT(u) + bT(v)$ for all scalars $a, b$.
+
+Every linear transformation from $\mathbb{R}^n$ to $\mathbb{R}^m$ is represented by an $m \times n$ matrix. To find the matrix, observe where $T$ sends each standard basis vector: the $j$-th column of the matrix is $T(e_j)$.
+
+For example, the transformation $T(x,y) = (2x + y, x - 3y)$ is linear. Its matrix is
+\[
+A = \begin{bmatrix} 2 & 1 \\ 1 & -3 \end{bmatrix},
+\]
+since $T(e_1) = (2,1)$ and $T(e_2) = (1,-3)$.
+
+Important classes of linear transformations include:
+\begin{itemize}
+  \item Rotation by angle $\theta$: matrix $\begin{bmatrix} \cos\theta & -\sin\theta \\ \sin\theta & \cos\theta \end{bmatrix}$.
+  \item Reflection across the $x$-axis: matrix $\begin{bmatrix} 1 & 0 \\ 0 & -1 \end{bmatrix}$.
+  \item Projection onto the $x$-axis: matrix $\begin{bmatrix} 1 & 0 \\ 0 & 0 \end{bmatrix}$.
+  \item Scaling by factor $c$ in all directions: matrix $cI$.
+\end{itemize}
+
+Translation (adding a fixed vector) is not linear because it moves the origin. Linear transformations always satisfy $T(\mathbf{0}) = \mathbf{0}$.
+
+The composition of two linear transformations is linear. If $S$ is represented by $A$ and $T$ is represented by $B$, then $T \circ S$ is represented by $BA$.
+
+\section*{The Kernel and Image of a Linear Transformation}
+
+The kernel (or null space) of $T: \mathbb{R}^n \to \mathbb{R}^m$ is the set of all inputs that $T$ sends to zero:
+\[
+\ker(T) = \{ x \in \mathbb{R}^n : T(x) = \mathbf{0} \}.
+\]
+The kernel is always a subspace of $\mathbb{R}^n$. Its dimension is called the nullity of $T$.
+
+The image (or column space) of $T$ is the set of all possible outputs:
+\[
+\text{im}(T) = \{ T(x) : x \in \mathbb{R}^n \}.
+\]
+The image is a subspace of $\mathbb{R}^m$. Its dimension is the rank of $T$.
+
+The rank-nullity theorem states:
+\[
+\text{rank}(T) + \text{nullity}(T) = n.
+\]
+This is a fundamental constraint: the dimensions of kernel and image must add up to the input dimension. If the transformation loses information (large kernel), it cannot fill a large image.
+
+Example: if $T: \mathbb{R}^4 \to \mathbb{R}^3$ has rank 2, then its nullity is $4 - 2 = 2$. There is a two-dimensional family of inputs that all map to zero.
+
+\section*{Matrix Inverse}
+
+A square $n \times n$ matrix $A$ is invertible if there exists a matrix $A^{-1}$ such that
+\[
+A A^{-1} = A^{-1} A = I,
+\]
+where $I$ is the $n \times n$ identity matrix. If $A^{-1}$ exists, $A$ is called nonsingular or invertible.
+
+A matrix is invertible if and only if:
+\begin{itemize}
+  \item Its determinant is nonzero.
+  \item Its rank equals $n$ (full rank).
+  \item Its columns are linearly independent.
+  \item Its rows are linearly independent.
+  \item The equation $Ax = \mathbf{0}$ has only the trivial solution $x = \mathbf{0}$.
+\end{itemize}
+These are all equivalent conditions.
+
+To compute $A^{-1}$ using row reduction: form the augmented matrix $[A \mid I]$ and row-reduce until the left side becomes $I$. At that point, the right side is $A^{-1}$.
+
+For a $2 \times 2$ matrix $A = \begin{bmatrix} a & b \\ c & d \end{bmatrix}$ with $\det(A) = ad - bc \neq 0$:
+\[
+A^{-1} = \frac{1}{ad-bc} \begin{bmatrix} d & -b \\ -c & a \end{bmatrix}.
+\]
+The inverse is used to solve $Ax = b$: if $A$ is invertible, the unique solution is $x = A^{-1} b$.
+
+If $A$ and $B$ are both invertible, then $(AB)^{-1} = B^{-1} A^{-1}$. The order reverses because undoing $AB$ means first undoing $B$, then undoing $A$.
+
+\section*{Linear Independence and Bases}
+
+Vectors $v_1, v_2, \ldots, v_k$ are linearly independent if the only solution to
+\[
+c_1 v_1 + c_2 v_2 + \cdots + c_k v_k = \mathbf{0}
+\]
+is $c_1 = c_2 = \cdots = c_k = 0$. Otherwise they are linearly dependent: some nontrivial combination equals zero, meaning at least one vector can be written as a combination of the others.
+
+To test independence, form a matrix whose columns are the vectors and row-reduce. The vectors are independent if and only if every column contains a pivot (no free variables).
+
+A basis for a subspace $V$ is a set of linearly independent vectors that spans $V$. Every vector in $V$ has a unique representation as a linear combination of basis vectors. The number of vectors in any basis for $V$ is the dimension $\dim(V)$.
+
+The standard basis for $\mathbb{R}^n$ is $\{e_1, e_2, \ldots, e_n\}$. Other bases are possible. For example, $\{(1,1), (1,-1)\}$ is a basis for $\mathbb{R}^2$.
+
+Choosing a basis lets us assign coordinates to vectors. If $\{b_1, b_2\}$ is a basis and $v = 3b_1 - 2b_2$, then the coordinates of $v$ in this basis are $(3, -2)$.
+
+\section*{Eigenvalues and Eigenvectors}
+
+Let $A$ be an $n \times n$ matrix. A nonzero vector $v$ is an eigenvector of $A$ if
+\[
+Av = \lambda v
+\]
+for some scalar $\lambda$, called the eigenvalue corresponding to $v$.
+
+The equation says the matrix $A$ acts on $v$ by pure scaling: no rotation, only stretching or flipping. Most vectors change direction under $A$, so eigenvectors are the exceptional cases.
+
+To find eigenvalues, rewrite the condition as $(A - \lambda I)v = \mathbf{0}$. For a nonzero solution $v$ to exist, the matrix $A - \lambda I$ must be singular, so its determinant must be zero:
+\[
+\det(A - \lambda I) = 0.
+\]
+This is the characteristic equation. Expanding the determinant gives a polynomial in $\lambda$ of degree $n$, called the characteristic polynomial. The roots of this polynomial are the eigenvalues.
+
+Example: let $A = \begin{bmatrix} 3 & 1 \\ 0 & 2 \end{bmatrix}$. Then
+\[
+\det(A - \lambda I) = (3 - \lambda)(2 - \lambda) = 0,
+\]
+giving eigenvalues $\lambda_1 = 3$ and $\lambda_2 = 2$.
+
+For $\lambda_1 = 3$: solve $(A - 3I)v = \mathbf{0}$ to get $v_1 = (1, 0)$.
+For $\lambda_2 = 2$: solve $(A - 2I)v = \mathbf{0}$ to get $v_2 = (1, -1)$.
+
+These two eigenvectors, scaled or not, are the only directions that $A$ acts on by pure scaling.
+
+\section*{Diagonalization}
+
+A matrix $A$ is diagonalizable if there exists an invertible matrix $P$ such that
+\[
+P^{-1} A P = D,
+\]
+where $D$ is diagonal. Equivalently, $A = P D P^{-1}$.
+
+The columns of $P$ are the eigenvectors of $A$, and the diagonal entries of $D$ are the corresponding eigenvalues. So $A$ is diagonalizable when it has enough linearly independent eigenvectors to form a basis.
+
+Diagonalization is useful because powers of $A$ become easy to compute:
+\[
+A^k = P D^k P^{-1},
+\]
+and raising a diagonal matrix to a power just raises each diagonal entry to that power.
+
+Not all matrices are diagonalizable. A matrix might have repeated eigenvalues with too few independent eigenvectors. Such matrices cannot be fully diagonalized, though they can be put into Jordan normal form.
+
+Symmetric matrices (where $A = A^T$) are always diagonalizable over the real numbers, and their eigenvectors for distinct eigenvalues are orthogonal. This makes symmetric matrices especially well-behaved.
+
+\section*{Summary}
+
+Vectors and their operations form the foundation. The dot product introduces angle and projection. Orthogonality gives us the cleanest coordinate systems. Matrices encode linear transformations, and matrix multiplication represents composing those transformations.
+
+Invertibility, rank, determinants, and linear independence all measure the same essential quality: whether a matrix preserves information or destroys it. Eigenvalues and eigenvectors reveal the intrinsic scaling behavior of a transformation, and diagonalization uses them to find the simplest representation of a matrix.
+
+\end{document}

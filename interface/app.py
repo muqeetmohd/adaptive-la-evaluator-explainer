@@ -1,3 +1,6 @@
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import gradio as gr
 from sentence_transformers import SentenceTransformer
 
@@ -24,6 +27,10 @@ def _build_initial_state():
     return {"responses": [], "stage": "diagnostic", "topic": TOPIC_LIST[0]}
 
 
+def _msg(role, content):
+    return {"role": role, "content": content}
+
+
 def respond(user_message, history, state, topic):
     if state is None:
         state = _build_initial_state()
@@ -32,7 +39,6 @@ def respond(user_message, history, state, topic):
 
     if state["stage"] == "diagnostic":
         state["responses"].append(user_message)
-        history.append((user_message, None))
         q_index = len(state["responses"])
 
         if q_index < 3:
@@ -44,19 +50,19 @@ def respond(user_message, history, state, topic):
                 "I'll explain it at your level."
             )
 
-        history[-1] = (user_message, bot_reply)
+        history = history + [_msg("user", user_message), _msg("assistant", bot_reply)]
         return history, state, "", ""
 
     # Query stage
     if _collection is None:
         bot_reply = (
             "ERROR: Knowledge base not loaded. "
-            "Please build it first by running `knowledge_base/embed.py`."
+            "Please build it first by running `python build_kb.py`."
         )
-        history.append((user_message, bot_reply))
+        history = history + [_msg("user", user_message), _msg("assistant", bot_reply)]
         return history, state, "", ""
 
-    history.append((user_message, "Generating explanation..."))
+    history = history + [_msg("user", user_message), _msg("assistant", "Generating explanation...")]
 
     try:
         result = run_session(
@@ -75,7 +81,7 @@ def respond(user_message, history, state, topic):
         explanation = f"ERROR: {e}"
         meta = ""
 
-    history[-1] = (user_message, explanation)
+    history[-1] = _msg("assistant", explanation)
     return history, state, "", meta
 
 
@@ -83,7 +89,7 @@ def reset(topic):
     state = _build_initial_state()
     state["topic"] = topic
     opening = QUESTIONS[0]
-    return [(None, opening)], state, "", ""
+    return [_msg("assistant", opening)], state, "", ""
 
 
 with gr.Blocks(title="Adaptive Linear Algebra Explainer") as demo:

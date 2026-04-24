@@ -1,5 +1,5 @@
 """
-Run this script once after placing the 4 PDFs in data/raw/ to build the knowledge base.
+Run this script once after placing the 4 synthetic note PDFs in data/raw/ to build the knowledge base.
 Usage: python build_kb.py
 """
 from knowledge_base.parse import parse_all_sources

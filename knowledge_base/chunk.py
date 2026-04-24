@@ -1,10 +1,10 @@
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 _TIER_MAP = {
-    "mit_ocw": 2,
-    "openstax": 2,
-    "pauls_notes": 1,
-    "axler": 3,
+    "intro_linear_algebra_notes": 2,
+    "systems_row_reduction_notes": 2,
+    "vector_spaces_notes": 1,
+    "eigen_notes": 3,
 }
 
 _KEYWORD_TOPIC_MAP = [
@@ -14,6 +14,7 @@ _KEYWORD_TOPIC_MAP = [
     ("matrix multipli", "matrix_multiplication"),
     ("vector space", "vector_spaces"),
     ("linear independen", "linear_independence"),
+    ("system of equation", "systems_of_equations"),
     ("basis", "basis"),
     ("determinant", "determinants"),
     ("dot product", "dot_product"),
@@ -22,7 +23,6 @@ _KEYWORD_TOPIC_MAP = [
     ("gauss", "row_reduction"),
     ("rank", "rank"),
     ("inverse", "matrix_inverse"),
-    ("system of equation", "systems_of_equations"),
     ("vector", "vectors"),
 ]
 

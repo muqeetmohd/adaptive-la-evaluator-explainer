@@ -1,15 +1,17 @@
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+import json
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer
 
 from knowledge_base.embed import load_knowledge_base
 from knowledge_base.topics import TOPIC_LIST
 from diagnostic.diagnostic import QUESTIONS
-from pipeline import run_session
+from pipeline import run_session, run_session_stream
 
 app = FastAPI(title="Adaptive LA Explainer API")
 
@@ -63,3 +65,30 @@ def run_session_endpoint(req: SessionRequest):
         return result
     except RuntimeError as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/session/stream")
+def stream_session_endpoint(req: SessionRequest):
+    if _collection is None:
+        raise HTTPException(status_code=503, detail="Knowledge base not loaded.")
+
+    def event_stream():
+        try:
+            for item in run_session_stream(
+                user_query=req.user_query,
+                diagnostic_responses=req.diagnostic_responses,
+                topic=req.topic,
+                collection=_collection,
+                embed_model=_model,
+            ):
+                if item[0] == "meta":
+                    _, tier, sources = item
+                    yield f"data: {json.dumps({'type': 'meta', 'tier': tier, 'sources': sources})}\n\n"
+                elif item[0] == "chunk":
+                    _, text = item
+                    yield f"data: {json.dumps({'type': 'chunk', 'text': text})}\n\n"
+        except RuntimeError as e:
+            yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+        yield "data: [DONE]\n\n"
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream")

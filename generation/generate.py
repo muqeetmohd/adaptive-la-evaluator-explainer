@@ -36,6 +36,47 @@ def generate_explanation(
     )
 
 
+def generate_explanation_stream(prompt_messages: dict, model: str = None):
+    """Yields text chunks from Groq (falls back to full response if Ollama)."""
+    if _GROQ_API_KEY:
+        yield from _stream_groq(prompt_messages["messages"], model or DEFAULT_GROQ_MODEL)
+    else:
+        yield generate_explanation(prompt_messages, model)
+
+
+def _stream_groq(messages: list, model: str):
+    import json as _json
+    try:
+        resp = requests.post(
+            GROQ_API_URL,
+            headers={"Authorization": f"Bearer {_GROQ_API_KEY}", "Content-Type": "application/json"},
+            json={"model": model, "messages": messages, "stream": True},
+            stream=True,
+            timeout=60,
+        )
+        resp.raise_for_status()
+    except requests.exceptions.ConnectionError:
+        raise RuntimeError("Cannot connect to Groq. Check your connection.")
+    except requests.exceptions.HTTPError as e:
+        raise RuntimeError(f"Groq API error: {e} — {resp.text}")
+
+    for raw in resp.iter_lines():
+        if not raw:
+            continue
+        line = raw.decode("utf-8") if isinstance(raw, bytes) else raw
+        if not line.startswith("data: "):
+            continue
+        payload = line[6:]
+        if payload == "[DONE]":
+            break
+        try:
+            delta = _json.loads(payload)["choices"][0]["delta"].get("content", "")
+            if delta:
+                yield delta
+        except (KeyError, IndexError, ValueError):
+            pass
+
+
 def _call_api(url: str, payload: dict, headers: dict, response_key, provider: str, timeout: int) -> str:
     try:
         response = requests.post(url, headers=headers, json=payload, timeout=timeout)

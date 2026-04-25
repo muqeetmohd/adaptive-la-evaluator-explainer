@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { BookOpen, RotateCcw, Sparkles, Brain, GraduationCap, Layers, ArrowUp } from 'lucide-react'
+import katex from 'katex'
+import 'katex/dist/katex.min.css'
 
 const API = '/api'
 
@@ -46,6 +48,65 @@ function TypingDots() {
   )
 }
 
+// ── Math rendering ──────────────────────────────────────────────────────────
+
+function renderKatex(tex: string, displayMode: boolean): React.ReactNode {
+  try {
+    const html = katex.renderToString(tex, {
+      displayMode,
+      throwOnError: false,
+      strict: false,
+    })
+    return (
+      <span
+        className={displayMode ? 'block text-center my-2' : 'inline'}
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+    )
+  } catch {
+    return <span>{tex}</span>
+  }
+}
+
+// Split text on math delimiters and inline formatting, return ReactNodes
+function inlineRender(text: string): React.ReactNode[] {
+  // Order matters: $$ before $, \[ before \(
+  const mathPattern = /(\$\$[\s\S]+?\$\$|\\\[[\s\S]+?\\\]|\$[^$\n]+?\$|\\\([^)]+?\\\))/g
+  const segments = text.split(mathPattern)
+  const nodes: React.ReactNode[] = []
+
+  segments.forEach((seg, si) => {
+    if (seg.startsWith('$$') && seg.endsWith('$$')) {
+      nodes.push(<React.Fragment key={si}>{renderKatex(seg.slice(2, -2), true)}</React.Fragment>)
+    } else if (seg.startsWith('\\[') && seg.endsWith('\\]')) {
+      nodes.push(<React.Fragment key={si}>{renderKatex(seg.slice(2, -2), true)}</React.Fragment>)
+    } else if (seg.startsWith('$') && seg.endsWith('$')) {
+      nodes.push(<React.Fragment key={si}>{renderKatex(seg.slice(1, -1), false)}</React.Fragment>)
+    } else if (seg.startsWith('\\(') && seg.endsWith('\\)')) {
+      nodes.push(<React.Fragment key={si}>{renderKatex(seg.slice(2, -2), false)}</React.Fragment>)
+    } else {
+      // Handle bold, italic, inline code
+      seg.split(/(`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g).forEach((p, pi) => {
+        if (p.startsWith('`') && p.endsWith('`')) {
+          nodes.push(
+            <code key={`${si}-${pi}`} style={{ padding: '1px 6px', borderRadius: 4, fontSize: '0.85em', fontFamily: 'monospace', background: 'rgba(108,99,255,0.18)', color: '#a78bfa' }}>
+              {p.slice(1, -1)}
+            </code>
+          )
+        } else if (p.startsWith('**') && p.endsWith('**')) {
+          nodes.push(<strong key={`${si}-${pi}`} style={{ color: '#ececf1', fontWeight: 600 }}>{p.slice(2, -2)}</strong>)
+        } else if (p.startsWith('*') && p.endsWith('*')) {
+          nodes.push(<em key={`${si}-${pi}`} style={{ color: '#d1d1e0' }}>{p.slice(1, -1)}</em>)
+        } else if (p) {
+          nodes.push(<React.Fragment key={`${si}-${pi}`}>{p}</React.Fragment>)
+        }
+      })
+    }
+  })
+
+  return nodes
+}
+
 function renderMarkdown(text: string): React.ReactNode {
   const lines = text.split('\n')
   const out: React.ReactNode[] = []
@@ -53,22 +114,39 @@ function renderMarkdown(text: string): React.ReactNode {
 
   while (i < lines.length) {
     const line = lines[i]
-    if (/^#{1,3}\s/.test(line)) {
+
+    // Display math block spanning multiple lines: \[ ... \] or $$ ... $$
+    if (/^\s*(\$\$|\\\[)/.test(line)) {
+      const openDelim = line.includes('$$') ? '$$' : '\\['
+      const closeDelim = openDelim === '$$' ? '$$' : '\\]'
+      const block: string[] = [line]
+      i++
+      while (i < lines.length && !lines[i].includes(closeDelim)) {
+        block.push(lines[i++])
+      }
+      if (i < lines.length) block.push(lines[i])
+      const raw = block.join('\n').replace(new RegExp(`^\\s*${openDelim.replace('$','\\$').replace('[','\\[')}\\s*`), '').replace(new RegExp(`\\s*${closeDelim.replace('$','\\$').replace(']','\\]')}\\s*$`), '')
+      out.push(<div key={i} className="my-3">{renderKatex(raw, true)}</div>)
+    } else if (/^#{1,3}\s/.test(line)) {
       const lvl = (line.match(/^(#+)/)?.[1].length ?? 1)
       const sizes = ['text-base font-semibold', 'text-sm font-semibold', 'text-sm font-medium']
-      out.push(<p key={i} className={`${sizes[Math.min(lvl-1,2)]} mt-3 mb-1`} style={{color:'#ececf1'}}>{inline(line.replace(/^#+\s/,''))}</p>)
+      out.push(
+        <p key={i} className={`${sizes[Math.min(lvl - 1, 2)]} mt-3 mb-1`} style={{ color: '#ececf1' }}>
+          {inlineRender(line.replace(/^#+\s/, ''))}
+        </p>
+      )
     } else if (/^(\*\*?|-|\d+\.)\s/.test(line)) {
       const items: string[] = []
       while (i < lines.length && /^(\*\*?|-|\d+\.)\s/.test(lines[i])) {
-        items.push(lines[i].replace(/^(\*\*?|-|\d+\.)\s/,''))
+        items.push(lines[i].replace(/^(\*\*?|-|\d+\.)\s/, ''))
         i++
       }
       out.push(
         <ul key={`ul${i}`} className="space-y-1 my-2">
-          {items.map((it,j) => (
-            <li key={j} className="flex gap-2 text-sm leading-relaxed" style={{color:'#c5c5d2'}}>
-              <span style={{color:'#6c63ff',flexShrink:0,marginTop:2}}>•</span>
-              <span>{inline(it)}</span>
+          {items.map((it, j) => (
+            <li key={j} className="flex gap-2 text-sm leading-relaxed" style={{ color: '#c5c5d2' }}>
+              <span style={{ color: '#6c63ff', flexShrink: 0, marginTop: 2 }}>•</span>
+              <span>{inlineRender(it)}</span>
             </li>
           ))}
         </ul>
@@ -77,24 +155,19 @@ function renderMarkdown(text: string): React.ReactNode {
     } else if (line.trim() === '') {
       out.push(<div key={`br${i}`} className="h-2" />)
     } else {
-      out.push(<p key={i} className="text-sm leading-relaxed" style={{color:'#c5c5d2'}}>{inline(line)}</p>)
+      out.push(
+        <p key={i} className="text-sm leading-relaxed" style={{ color: '#c5c5d2' }}>
+          {inlineRender(line)}
+        </p>
+      )
     }
     i++
   }
+
   return <>{out}</>
 }
 
-function inline(text: string): React.ReactNode {
-  return text.split(/(`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g).map((p,i) => {
-    if (p.startsWith('`') && p.endsWith('`'))
-      return <code key={i} className="px-1.5 py-0.5 rounded text-xs font-mono" style={{background:'rgba(108,99,255,0.18)',color:'#a78bfa'}}>{p.slice(1,-1)}</code>
-    if (p.startsWith('**') && p.endsWith('**'))
-      return <strong key={i} style={{color:'#ececf1',fontWeight:600}}>{p.slice(2,-2)}</strong>
-    if (p.startsWith('*') && p.endsWith('*'))
-      return <em key={i} style={{color:'#d1d1e0'}}>{p.slice(1,-1)}</em>
-    return p
-  })
-}
+// ── App ─────────────────────────────────────────────────────────────────────
 
 export default function App() {
   const [stage, setStage]                 = useState<Stage>('diagnostic')
@@ -107,8 +180,8 @@ export default function App() {
   const [diagStep, setDiagStep]           = useState(0)
   const [resultTier, setResultTier]       = useState<TierNum | null>(null)
   const [loading, setLoading]             = useState(false)
-  const bottomRef  = useRef<HTMLDivElement>(null)
-  const inputRef   = useRef<HTMLTextAreaElement>(null)
+  const bottomRef = useRef<HTMLDivElement>(null)
+  const inputRef  = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     Promise.all([
@@ -155,25 +228,63 @@ export default function App() {
     }
 
     if (stage === 'chat') {
+      // Add user message + empty loading assistant message
       setMessages(m => [...m,
         { role: 'user', content: text },
         { role: 'assistant', content: '', loading: true },
       ])
       setLoading(true)
+
       try {
-        const res = await fetch(`${API}/session`, {
+        const res = await fetch(`${API}/session/stream`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ user_query: text, diagnostic_responses: diagResponses, topic: selectedTopic }),
         })
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.detail)
-        setResultTier(data.tier as TierNum)
-        setMessages(m => m.map((msg, i) =>
-          i === m.length - 1
-            ? { role: 'assistant', content: data.explanation, tier: data.tier, sources: data.sources_used }
-            : msg
-        ))
+
+        if (!res.ok) {
+          const err = await res.json()
+          throw new Error(err.detail ?? 'Request failed')
+        }
+
+        const reader = res.body!.getReader()
+        const decoder = new TextDecoder()
+        let buf = ''
+
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          buf += decoder.decode(value, { stream: true })
+
+          const lines = buf.split('\n')
+          buf = lines.pop() ?? ''
+
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue
+            const payload = line.slice(6)
+            if (payload === '[DONE]') break
+
+            let event: { type: string; tier?: number; sources?: string[]; text?: string; message?: string }
+            try { event = JSON.parse(payload) } catch { continue }
+
+            if (event.type === 'meta') {
+              setResultTier(event.tier as TierNum)
+              setMessages(m => m.map((msg, i) =>
+                i === m.length - 1
+                  ? { ...msg, tier: event.tier as TierNum, sources: event.sources }
+                  : msg
+              ))
+            } else if (event.type === 'chunk') {
+              setMessages(m => m.map((msg, i) =>
+                i === m.length - 1
+                  ? { ...msg, content: msg.content + (event.text ?? ''), loading: false }
+                  : msg
+              ))
+            } else if (event.type === 'error') {
+              throw new Error(event.message)
+            }
+          }
+        }
       } catch (e: unknown) {
         const err = e instanceof Error ? e.message : 'Unknown error'
         setMessages(m => m.map((msg, i) =>
@@ -211,18 +322,13 @@ export default function App() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: '#212121', overflow: 'hidden' }}>
 
-      {/* Sidebar-style top bar */}
-      <div
-        style={{
-          flexShrink: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0 16px',
-          height: 56,
-          borderBottom: '1px solid #2f2f2f',
-        }}
-      >
+      {/* Header */}
+      <div style={{
+        flexShrink: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 16px', height: 56,
+        borderBottom: '1px solid #2f2f2f',
+      }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg,#6c63ff,#a78bfa)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Layers size={14} color="#fff" />
@@ -231,7 +337,6 @@ export default function App() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          {/* Stage pills */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             {stageLabels.map((label, i) => {
               const active = stageIndex === i
@@ -266,7 +371,7 @@ export default function App() {
               display: 'flex', alignItems: 'center', gap: 5,
               padding: '5px 12px', borderRadius: 8,
               border: '1px solid #3f3f3f', background: 'transparent',
-              color: '#888', fontSize: 12, cursor: 'pointer', transition: 'all 0.2s',
+              color: '#888', fontSize: 12, cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'inherit',
             }}
             onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor='#6c63ff'; el.style.color='#a78bfa'; el.style.background='rgba(108,99,255,0.08)' }}
             onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor='#3f3f3f'; el.style.color='#888'; el.style.background='transparent' }}
@@ -278,17 +383,15 @@ export default function App() {
 
       {/* Progress bar */}
       <div style={{ flexShrink: 0, height: 2, background: '#2f2f2f' }}>
-        <div style={{ height: '100%', width: `${(stageIndex/2)*100}%`, background: 'linear-gradient(90deg,#6c63ff,#a78bfa)', transition: 'width 0.6s ease' }} />
+        <div style={{ height: '100%', width: `${(stageIndex / 2) * 100}%`, background: 'linear-gradient(90deg,#6c63ff,#a78bfa)', transition: 'width 0.6s ease' }} />
       </div>
 
-      {/* Messages — scrollable, grows to fill available space */}
-      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '24px 16px' }}>
-        <div style={{ maxWidth: 680, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {/* Messages */}
+      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '28px 16px' }}>
+        <div style={{ maxWidth: 680, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 28 }}>
 
           {messages.map((msg, i) => (
             <div key={i} style={{ display: 'flex', gap: 12, flexDirection: msg.role === 'user' ? 'row-reverse' : 'row', alignItems: 'flex-start' }}>
-
-              {/* Avatar */}
               {msg.role === 'assistant' && (
                 <div style={{
                   width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
@@ -313,9 +416,12 @@ export default function App() {
                   </div>
                 ) : (
                   <div style={{ paddingLeft: 4 }}>
-                    {msg.loading ? <TypingDots /> : renderMarkdown(msg.content)}
+                    {msg.loading && !msg.content
+                      ? <TypingDots />
+                      : renderMarkdown(msg.content)
+                    }
                     {msg.tier && (
-                      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
                         <TierBadge tier={msg.tier} />
                         {msg.sources && msg.sources.length > 0 && (
                           <span style={{ fontSize: 11, color: '#555' }}>{msg.sources.join(' · ')}</span>
@@ -343,18 +449,8 @@ export default function App() {
                       color: '#b0b0c0', fontSize: 13, cursor: 'pointer',
                       transition: 'all 0.2s', fontFamily: 'inherit',
                     }}
-                    onMouseEnter={e => {
-                      const el = e.currentTarget as HTMLElement
-                      el.style.borderColor = '#6c63ff'
-                      el.style.color = '#a78bfa'
-                      el.style.background = 'rgba(108,99,255,0.1)'
-                    }}
-                    onMouseLeave={e => {
-                      const el = e.currentTarget as HTMLElement
-                      el.style.borderColor = '#3f3f3f'
-                      el.style.color = '#b0b0c0'
-                      el.style.background = '#2f2f2f'
-                    }}
+                    onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor='#6c63ff'; el.style.color='#a78bfa'; el.style.background='rgba(108,99,255,0.1)' }}
+                    onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor='#3f3f3f'; el.style.color='#b0b0c0'; el.style.background='#2f2f2f' }}
                   >
                     {t.replace(/_/g, ' ')}
                   </button>
@@ -367,24 +463,17 @@ export default function App() {
         </div>
       </div>
 
-      {/* Input — fixed to bottom, ChatGPT style */}
+      {/* Input bar */}
       {stage !== 'topic' && (
-        <div style={{
-          flexShrink: 0,
-          padding: '12px 16px 20px',
-          background: '#212121',
-        }}>
+        <div style={{ flexShrink: 0, padding: '12px 16px 20px', background: '#212121' }}>
           <div style={{ maxWidth: 680, margin: '0 auto' }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'flex-end',
-              gap: 8,
-              padding: '10px 12px 10px 16px',
-              background: '#2f2f2f',
-              borderRadius: 16,
-              border: '1px solid #3f3f3f',
-              transition: 'border-color 0.2s',
-            }}
+            <div
+              style={{
+                display: 'flex', alignItems: 'flex-end', gap: 8,
+                padding: '10px 12px 10px 16px',
+                background: '#2f2f2f', borderRadius: 16,
+                border: '1px solid #3f3f3f', transition: 'border-color 0.2s',
+              }}
               onFocusCapture={e => (e.currentTarget as HTMLElement).style.borderColor = '#6c63ff'}
               onBlurCapture={e => (e.currentTarget as HTMLElement).style.borderColor = '#3f3f3f'}
             >
@@ -394,10 +483,7 @@ export default function App() {
                 rows={1}
                 onChange={e => { setInput(e.target.value); autoResize() }}
                 onKeyDown={e => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault()
-                    send()
-                  }
+                  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
                 }}
                 placeholder={
                   stage === 'diagnostic'
@@ -406,32 +492,20 @@ export default function App() {
                 }
                 disabled={loading}
                 style={{
-                  flex: 1,
-                  background: 'transparent',
-                  border: 'none',
-                  outline: 'none',
-                  resize: 'none',
-                  color: '#ececf1',
-                  fontSize: 14,
-                  lineHeight: 1.6,
-                  fontFamily: 'inherit',
-                  caretColor: '#a78bfa',
-                  overflowY: 'auto',
-                  maxHeight: 180,
-                  paddingTop: 2,
+                  flex: 1, background: 'transparent', border: 'none', outline: 'none',
+                  resize: 'none', color: '#ececf1', fontSize: 14, lineHeight: 1.6,
+                  fontFamily: 'inherit', caretColor: '#a78bfa',
+                  overflowY: 'auto', maxHeight: 180, paddingTop: 2,
                 }}
               />
               <button
                 onClick={send}
                 disabled={!input.trim() || loading}
                 style={{
-                  width: 32, height: 32,
-                  borderRadius: 8, border: 'none',
+                  width: 32, height: 32, borderRadius: 8, border: 'none', flexShrink: 0,
                   background: input.trim() && !loading ? 'linear-gradient(135deg,#6c63ff,#a78bfa)' : '#3f3f3f',
-                  color: '#fff',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
                   cursor: input.trim() && !loading ? 'pointer' : 'not-allowed',
-                  flexShrink: 0,
                   transition: 'background 0.2s',
                 }}
               >
@@ -446,7 +520,6 @@ export default function App() {
           </div>
         </div>
       )}
-
     </div>
   )
 }

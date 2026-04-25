@@ -29,7 +29,7 @@ Respond with a clear, structured explanation.\
 
 def build_prompt(
     tier: int,
-    misconception,
+    misconception: "str | None",
     chunks_text: str,
     user_query: str,
 ) -> dict:
